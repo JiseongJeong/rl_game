@@ -41,8 +41,9 @@ class Bricks:
         self.y_start = 0
         self.y_end = 240
         self.bricks = []
-        self.create_all_lanes()
         self.total_bricks_hp: int = 0
+        self.create_all_lanes()
+
 # 내가 정한 간격으로 배치 가능 사각형 배열 말고는.. 어려웡.. 나중에!
     # 위에 cls.gap = 32로 했음
 
@@ -50,11 +51,11 @@ class Bricks:
     def create_all_lanes(self):
         for i in range(self.y_start, self.y_end, Bricks.gap):
             self.create_lane(i)
-
+        States.total_bricks_hp = self.total_bricks_hp
     def create_lane(self, y_cor):
         for i in range(-570, 570, 63):
             brick = Brick(i, y_cor)
             self.bricks.append(brick)
             self.total_bricks_hp += brick.hp
-        States.total_bricks_hp = self.total_bricks_hp
+
 

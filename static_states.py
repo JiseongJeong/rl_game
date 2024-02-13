@@ -4,8 +4,8 @@ class States():
     prev_ball_pos_x: float = 0.0
     prev_ball_pos_y: float = 0.0
     paddle_pos_x: float = 0.0
-    bricks_left_count: int = 0
-    total_bricks_hp: int = 0
+    bricks_left_count: float = 0
+    total_bricks_hp: float = 0.0
 
     @classmethod
     def initializing(cls):

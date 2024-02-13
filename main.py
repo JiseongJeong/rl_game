@@ -4,6 +4,23 @@ from ball import Ball
 from bricks import Bricks
 import time
 from static_states import States
+import numpy as np
+
+# 강화학습 관련 아래
+
+import os
+
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
+import numpy as np # linear algebra
+import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
+import gym # for environment
+from collections import deque
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.optimizers import Adam # adaptive momentum
+import random
+
 
 def run_game_single_action(action):
 	'''
@@ -38,14 +55,14 @@ def run_game_single_action(action):
 	is_game_continue: bool = check_collision_with_walls()
 	if not is_game_continue:
 		temp_flag = update_states()
-		return is_game_continue
+		return is_game_continue, 1.0  #reward
 	check_collision_with_paddle()
 
 	check_collision_with_bricks()
 
 	is_game_continue: bool =  update_states()
 
-	return is_game_continue
+	return is_game_continue, 1.0 #reward
 	# if iteration_cnt > 100:
 	# 	break
 
@@ -67,6 +84,8 @@ def update_states():
 
 	return is_game_continue
 
+def get_states():
+	return (States.ball_pos_x,States.ball_pos_y,States.paddle_pos_x, States.bricks_left_count)
 
 #----
 game_speed: float = 0.03   # 겜속도 0.01~0.02 추천
@@ -194,14 +213,24 @@ def check_collision_with_bricks():
 			# 상단 부딛
 			elif ball.ycor() > brick.upper_wall:
 				ball.bounce(x_bounce=False, y_bounce=True)
-
+def memory(self, state):
+	pass
 
 if __name__ == '__main__' :
 	# 게임 실행 무한루프. GAME OVER시 까지
 	# playing_game = True
+	States.initializing()
+	state = get_states()
+	state = np.reshape(state, [1, 4])
+	model = Sequential()
 
-	while True:
-		run_game_single_action(action=action)
+	is_game_continue = True
+	while is_game_continue:
+		act_values = model.predict(state)
+		action = np.argmax(act_values[0])
+		is_game_continue, reward = run_game_single_action(action=action)
+		state = get_states()
+		memory(state)
 	tr.mainloop()
 
 
