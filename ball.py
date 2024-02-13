@@ -2,7 +2,7 @@ from turtle import Turtle
 
 
 #일종의 속도임 1iter당 몇 tic?
-MOVE_DIST = 10
+MOVE_DIST = 5
 
 
 class Ball(Turtle):

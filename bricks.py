@@ -1,6 +1,6 @@
 from turtle import Turtle
 import random
-
+from static_states import States
 
 #색깔 엄청 많음 turtle 공식문서 참조
 COLOR_LIST = ['light blue', 'royal blue',
@@ -24,7 +24,7 @@ class Brick(Turtle):
         self.color(random.choice(COLOR_LIST))
         self.goto(x=x_cor, y=y_cor)
 
-        self.quantity = random.choice(weights)
+        self.hp = random.choice(weights)
 
         # 각 벽돌객체의 경계 좌표 설정해줌
         self.left_wall = self.xcor() - 30
@@ -42,7 +42,7 @@ class Bricks:
         self.y_end = 240
         self.bricks = []
         self.create_all_lanes()
-
+        self.total_bricks_hp: int = 0
 # 내가 정한 간격으로 배치 가능 사각형 배열 말고는.. 어려웡.. 나중에!
     # 위에 cls.gap = 32로 했음
 
@@ -55,3 +55,6 @@ class Bricks:
         for i in range(-570, 570, 63):
             brick = Brick(i, y_cor)
             self.bricks.append(brick)
+            self.total_bricks_hp += brick.hp
+        States.total_bricks_hp = self.total_bricks_hp
+

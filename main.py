@@ -3,9 +3,73 @@ from paddle import Paddle
 from ball import Ball
 from bricks import Bricks
 import time
+from static_states import States
+
+def run_game_single_action(action):
+	'''
+	:param action: {0, 1, 2} 중 한개의 값이 들어온다. 각각에 해당하는 액션을 input으로 받는 다는 뜻
+	:return: static클래스에 state값을 저장해주고 게임이 지속되어야하는지 여부를 true/false로 뱉어준다.
+	'''
+	iteration_cnt = 0
+
+	if action == 0:
+		move_by_action = paddle.move_left
+	elif action == 1:
+		move_by_action = paddle.hold_still
+	elif action == 2:
+		move_by_action = paddle.move_right
+
+	#디버깅 편하게 하기위해 일단 추가
+	iteration_cnt += 1
+
+	#액션값 input에 대한 paddle의 moving처리
+	move_by_action()
+
+	#터틀.화면새로고침기능()
+	screen.update()
+	#겜속도 조절가능(0.01~0.02) 적절해보임
+	time.sleep(game_speed)
+
+	#main.py 에서 정의한 3개 매쏟(check~)
+
+	ball.move()
+
+	# is_game_continue = check_collision_with_walls()
+	is_game_continue: bool = check_collision_with_walls()
+	if not is_game_continue:
+		temp_flag = update_states()
+		return is_game_continue
+	check_collision_with_paddle()
+
+	check_collision_with_bricks()
+
+	is_game_continue: bool =  update_states()
+
+	return is_game_continue
+	# if iteration_cnt > 100:
+	# 	break
+
+def update_states():
+	temp_ball_pos_x = States.ball_pos_x
+	temp_ball_pos_y = States.ball_pos_y
+
+
+	States.prev_ball_pos_x: float = temp_ball_pos_x
+	States.prev_ball_pos_y: float = temp_ball_pos_y
+
+	States.ball_pos_x = ball.xcor()
+	States.ball_pos_y: ball.ycor()
+
+	States.paddle_pos_x = paddle.xcor()
+	States.bricks_left_count: int = bricks.total_bricks_hp
+
+	is_game_continue: bool = States.bricks_left_count != 0
+
+	return is_game_continue
+
 
 #----
-game_speed: float = 0.02   # 겜속도 0.01~0.02 추천
+game_speed: float = 0.03   # 겜속도 0.01~0.02 추천
 
 
 # 게임창 객체 생성 및 사이즈/ 배경색 조절 가능
@@ -39,18 +103,17 @@ def check_collision_with_walls():
 # 게임창 양쪽 벽에 부딛혔나?
 	if ball.xcor() < -580 or ball.xcor() > 570:
 		ball.bounce(x_bounce=True, y_bounce=False)
-		return None
 
 	# 게임창 윗쪽 벽에 부딛혔나?
 	if ball.ycor() > 270:
 		ball.bounce(x_bounce=False, y_bounce=True)
-		return None
+
 
 		# 게임창 바닥에 떨어졌나? 그럼 겜 오바
 		# 향후 강화학습 태우기 위해 게임오버 신호값따야하는 포인트 <chkpt1>
 	if ball.ycor() < -280:
 		ball.reset()
-		return None
+		return False
 		#return boolean 해서 게임오버 플레그 만들수있을듯
 
 
@@ -109,8 +172,9 @@ def check_collision_with_bricks():
 	for brick in bricks.bricks:
         # 공과 벽돌의 거리가 40 미만일떄 = 충돌
 		if ball.distance(brick) < 40:
-			brick.quantity -= 1
-			if brick.quantity == 0:
+			brick.hp -= 1
+			bricks.total_bricks_hp -= 1
+			if brick.hp == 0:
 				brick.clear()
 				brick.goto(3000, 3000)  #임시
 				bricks.bricks.remove(brick)
@@ -135,32 +199,11 @@ def check_collision_with_bricks():
 if __name__ == '__main__' :
 	# 게임 실행 무한루프. GAME OVER시 까지
 	# playing_game = True
-	iteration_cnt = 0
 
-	while playing_game:
-
-		#디버깅 편하게 하기위해 일단 추가
-		iteration_cnt += 1
-
-		#터틀.화면새로고침기능()
-		screen.update()
-		#겜속도 조절가능(0.01~0.02) 적절해보임
-		time.sleep(game_speed)
-
-		#main.py 에서 정의한 3개 매쏟(check~)
-
-		ball.move()
-
-		# playing_game = check_collision_with_walls()
-		check_collision_with_walls()
-
-		check_collision_with_paddle()
-
-		check_collision_with_bricks()
-		# if iteration_cnt > 100:
-		# 	break
+	while True:
+		run_game_single_action(action=action)
 	tr.mainloop()
 
 
 else:
-	raise exception('알 수 없는 접근')
+	raise Exception('알 수 없는 접근')

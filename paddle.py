@@ -17,3 +17,6 @@ class Paddle(Turtle):
 
     def move_right(self):
         self.forward(MOVE_DIST)
+
+    def hold_still(self):
+        pass
